@@ -1,0 +1,63 @@
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local TeleportService = game:GetService("TeleportService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local player = Players.LocalPlayer
+
+-- 🔽 TELEPORT LIST 🔽
+local teleportList = {
+    {name = "Teleport Pos 1", pos = Vector3.new(625.27, 1799.83, 3432.84)},
+    {name = "PUNCAK", pos = Vector3.new(780.47, 2183.38, 3945.07)},
+}
+
+-- 🔽 FUNGSI TELEPORT 🔽
+local function teleportTo(position)
+	local character = player.Character or player.CharacterAdded:Wait()
+	local hrp = character:WaitForChild("HumanoidRootPart")
+	hrp.CFrame = CFrame.new(position)
+end
+
+-- 🔽 SISTEM AUTO FARM 🔽
+local teleporting = false
+
+local function autoFarmLoop()
+	teleporting = true
+
+	while teleporting do
+		for i, data in ipairs(teleportList) do
+			-- Teleport ke posisi
+			teleportTo(data.pos)
+			task.wait(1)
+
+			-- Jika sudah sampai di PUNCAK → langsung rejoin
+			if data.name == "PUNCAK" then
+				task.wait(1)
+				TeleportService:Teleport(game.PlaceId, player) -- Rejoin ke server yang sama
+				return -- hentikan loop
+			end
+		end
+	end
+end
+
+-- 🔽 MULAI OTOMATIS 🔽
+task.spawn(autoFarmLoop)
+
+-- 🔽 SISTEM TOGGLE (jika kamu pakai tombol UI) 🔽
+local function toggleAutoFarm(state)
+    teleporting = state
+    if teleporting then
+        button.Text = "RUNNING..."
+        button.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+        task.spawn(autoFarmLoop)
+    else
+        button.Text = "STOPPED"
+        button.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+    end
+end
+
+if button then
+	button.MouseButton1Click:Connect(function()
+		toggleAutoFarm(not teleporting)
+	end)
+end
